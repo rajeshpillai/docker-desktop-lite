@@ -8,6 +8,17 @@ const docker = new Docker();
 app.use(cors());
 app.use(express.json());
 
+// Prune unused Docker volumes
+app.delete('/volumes/prune', async (req, res) => {
+  try {
+    const result = await docker.pruneVolumes();
+    res.json({ message: 'Unused volumes pruned successfully', result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // List all Docker volumes
 app.get('/volumes', async (req, res) => {
   try {

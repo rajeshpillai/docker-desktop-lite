@@ -1,4 +1,18 @@
-// Function to start a Docker container
+// Function to prune unused Docker volumes
+async function pruneVolumes() {
+  if (!confirm('Are you sure you want to prune all unused volumes?')) return;
+
+  try {
+    const response = await fetch('http://localhost:3000/volumes/prune', { method: 'DELETE' });
+    if (!response.ok) throw new Error(`Error pruning volumes: ${response.statusText}`);
+    const data = await response.json();
+    alert('Unused volumes pruned successfully.');
+    listVolumes();  // Refresh the volume list
+  } catch (error) {
+    console.error('Error pruning volumes:', error);
+  }
+}
+
 // Function to start a Docker container
 async function startContainer(id) {
   try {
@@ -252,6 +266,7 @@ function renderVolumes(volumes) {
       <h2 class="text-lg font-bold">${volume.Name}</h2>
       <p><strong>Mountpoint:</strong> ${volume.Mountpoint}</p>
       <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded mt-2" onclick="removeVolume('${volume.Name}')">Remove</button>
+      
     </div>
   `).join('');
 
