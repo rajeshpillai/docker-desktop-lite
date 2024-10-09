@@ -1,3 +1,17 @@
+// Function to fetch and display container health status
+async function fetchHealthStatus(id) {
+  try {
+    const response = await fetch(`http://localhost:3000/containers/${id}/health`);
+    if (!response.ok) throw new Error(`Error fetching health status: ${response.statusText}`);
+    const data = await response.json();
+    return data.health;
+  } catch (error) {
+    console.error('Error fetching health status:', error);
+    return 'Error';
+  }
+}
+
+
 // Function to fetch and display container stats
 async function viewStats(id) {
   try {
@@ -221,25 +235,29 @@ async function fetchContainers() {
 }
 
 // Function to render containers
-// Updated renderContainers function
-function renderContainers(containers) {
+// Update the renderContainers function to include health status
+async function renderContainers(containers) {
   const output = document.getElementById('output');
   if (!containers || containers.length === 0) {
     output.innerHTML = '<p class="text-red-500">No containers found.</p>';
     return;
   }
 
-  const containerRows = containers.map(container => {
+  const containerRows = await Promise.all(containers.map(async (container) => {
     const isRunning = container.State === 'running';
     const buttonLabel = isRunning ? 'Stop' : 'Start';
     const buttonClass = isRunning ? 'bg-red-500 hover:bg-red-700' : 'bg-blue-500 hover:bg-blue-700';
     const buttonAction = isRunning ? `stopContainer('${container.Id}')` : `startContainer('${container.Id}')`;
+
+    // Fetch health status for each container
+    const healthStatus = await fetchHealthStatus(container.Id);
 
     return `
       <div class="bg-white shadow-md rounded-lg mb-4 p-4">
         <h2 class="text-lg font-bold">${container.Names[0]}</h2>
         <p><strong>Container ID:</strong> ${container.Id.substring(0, 12)}</p>
         <p><strong>Status:</strong> ${isRunning ? 'Running' : 'Stopped'}</p>
+        <p><strong>Health Status:</strong> ${healthStatus}</p>
         <div class="mt-2 space-x-2">
           <button class="${buttonClass} text-white font-bold py-1 px-3 rounded" onclick="${buttonAction}">${buttonLabel}</button>
           <button class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded" onclick="inspectContainer('${container.Id}')">Inspect</button>
@@ -249,11 +267,10 @@ function renderContainers(containers) {
         </div>
       </div>
     `;
-  }).join('');
+  }));
 
-  output.innerHTML = containerRows;
+  output.innerHTML = containerRows.join('');
 }
-
 
 
 // Function to view container logs

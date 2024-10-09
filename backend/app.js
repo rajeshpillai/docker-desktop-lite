@@ -8,6 +8,21 @@ const docker = new Docker();
 app.use(cors());
 app.use(express.json());
 
+// Route to fetch container health status
+app.get('/containers/:id/health', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const container = docker.getContainer(id);
+    const inspectData = await container.inspect();
+    
+    const healthStatus = inspectData.State.Health ? inspectData.State.Health.Status : 'No Health Check';
+    res.json({ health: healthStatus });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Route to get container stats
 app.get('/containers/:id/stats', async (req, res) => {
   const { id } = req.params;
