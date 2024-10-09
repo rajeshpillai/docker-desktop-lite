@@ -1,92 +1,74 @@
 const express = require('express');
 const Docker = require('dockerode');
-const docker = new Docker();
-const app = express();
+const cors = require('cors');
 
-// Middleware to parse request body as JSON if needed in the future
+const app = express();
+const docker = new Docker();
+
+app.use(cors());
 app.use(express.json());
 
-// List all containers (both running and stopped)
+// List all containers
 app.get('/containers', async (req, res) => {
   try {
     const containers = await docker.listContainers({ all: true });
-    
-    if (!containers || containers.length === 0) {
-      return res.status(404).json({ error: 'No containers found' });
-    }
-    
-    res.status(200).json({ containers });
+    res.json({ containers });
   } catch (err) {
-    console.error("Error fetching containers:", err);
-    res.status(500).json({ error: 'Failed to fetch containers' });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Start a container by ID
+// Start a container
 app.post('/containers/:id/start', async (req, res) => {
-  const containerId = req.params.id;
-
-  // Validate the container ID
-  if (!containerId || containerId.length === 0) {
-    return res.status(400).json({ error: 'Container ID is required' });
-  }
-
+  const { id } = req.params;
   try {
-    const container = docker.getContainer(containerId);
-    const containerInfo = await container.inspect();
-
-    if (containerInfo.State.Running) {
-      return res.status(400).json({ error: 'Container is already running' });
-    }
-
+    const container = docker.getContainer(id);
     await container.start();
-    res.status(200).json({ message: `Container ${containerId} started successfully` });
+    res.json({ message: 'Container started' });
   } catch (err) {
-    console.error(`Error starting container ${containerId}:`, err);
-    if (err.statusCode === 404) {
-      return res.status(404).json({ error: 'Container not found' });
-    }
-    res.status(500).json({ error: `Failed to start container ${containerId}` });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Stop a container by ID
+// Stop a container
 app.post('/containers/:id/stop', async (req, res) => {
-  const containerId = req.params.id;
-
-  // Validate the container ID
-  if (!containerId || containerId.length === 0) {
-    return res.status(400).json({ error: 'Container ID is required' });
-  }
-
+  const { id } = req.params;
   try {
-    const container = docker.getContainer(containerId);
-    const containerInfo = await container.inspect();
-
-    if (!containerInfo.State.Running) {
-      return res.status(400).json({ error: 'Container is not running' });
-    }
-
+    const container = docker.getContainer(id);
     await container.stop();
-    res.status(200).json({ message: `Container ${containerId} stopped successfully` });
+    res.json({ message: 'Container stopped' });
   } catch (err) {
-    console.error(`Error stopping container ${containerId}:`, err);
-    if (err.statusCode === 404) {
-      return res.status(404).json({ error: 'Container not found' });
-    }
-    res.status(500).json({ error: `Failed to stop container ${containerId}` });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Error handling middleware for unexpected errors
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'An unexpected error occurred' });
+// Inspect a container (Detailed info)
+app.get('/containers/:id/inspect', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const container = docker.getContainer(id);
+    const data = await container.inspect();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Start the server
+// Remove a container
+app.delete('/containers/:id/remove', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const container = docker.getContainer(id);
+    await container.remove({ force: true });
+    res.json({ message: 'Container removed' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Server setup
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
 
