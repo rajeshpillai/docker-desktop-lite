@@ -1,3 +1,74 @@
+// Store selected project directory
+let selectedProjectDir = '';
+
+// Function to update the selected directory
+function selectProjectDirectory() {
+  selectedProjectDir = document.getElementById('project-dir').value;
+}
+
+// Fetch Docker Compose services
+async function listComposeServices() {
+  if (!selectedProjectDir) return alert('Please select a project directory.');
+
+  try {
+    const response = await fetch('http://localhost:3000/compose/services', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectDir: selectedProjectDir })
+    });
+    if (!response.ok) throw new Error(`Error fetching services: ${response.statusText}`);
+    const data = await response.json();
+    renderComposeServices(data.services);
+  } catch (error) {
+    console.error('Error fetching Docker Compose services:', error);
+  }
+}
+
+// Render Docker Compose services
+function renderComposeServices(services) {
+  const output = document.getElementById('compose-output');
+  output.innerHTML = `<pre>${services}</pre>`;
+}
+
+// Start Docker Compose services
+async function startCompose() {
+  if (!selectedProjectDir) return alert('Please select a project directory.');
+
+  try {
+    const response = await fetch('http://localhost:3000/compose/up', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectDir: selectedProjectDir })
+    });
+    if (!response.ok) throw new Error(`Error starting services: ${response.statusText}`);
+    const data = await response.json();
+    alert(data.message);
+    listComposeServices();  // Refresh services list
+  } catch (error) {
+    console.error('Error starting Docker Compose services:', error);
+  }
+}
+
+// Stop Docker Compose services
+async function stopCompose() {
+  if (!selectedProjectDir) return alert('Please select a project directory.');
+
+  try {
+    const response = await fetch('http://localhost:3000/compose/down', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectDir: selectedProjectDir })
+    });
+    if (!response.ok) throw new Error(`Error stopping services: ${response.statusText}`);
+    const data = await response.json();
+    alert(data.message);
+    listComposeServices();  // Refresh services list
+  } catch (error) {
+    console.error('Error stopping Docker Compose services:', error);
+  }
+}
+
+
 // Function to fetch and display container health status
 async function fetchHealthStatus(id) {
   try {
@@ -375,23 +446,26 @@ function switchSection(section) {
   const containersSection = document.getElementById('containers-section');
   const imagesSection = document.getElementById('images-section');
   const volumesSection = document.getElementById('volumes-section');
-  const networksSection = document.getElementById('networks-section');  // New networks section
+  const networksSection = document.getElementById('networks-section');
+  const composeSection = document.getElementById('compose-section'); // Docker Compose section
 
-  // Hide all sections
   containersSection.classList.add('hidden');
   imagesSection.classList.add('hidden');
   volumesSection.classList.add('hidden');
-  networksSection.classList.add('hidden');  // Hide networks section
+  networksSection.classList.add('hidden');
+  composeSection.classList.add('hidden');  // Hide Docker Compose section
 
-  // Show the selected section
+  
   if (section === 'containers') {
     containersSection.classList.remove('hidden');
   } else if (section === 'images') {
     imagesSection.classList.remove('hidden');
   } else if (section === 'volumes') {
     volumesSection.classList.remove('hidden');
-  } else if (section === 'networks') {  // Show networks section
+  } else if (section === 'networks') {
     networksSection.classList.remove('hidden');
+  } else if (section === 'compose') {
+    composeSection.classList.remove('hidden');  // Show Docker Compose section
   }
 }
 
@@ -554,9 +628,17 @@ document.querySelector('a[href="#networks-section"]').addEventListener('click', 
   switchSection('networks');  // For the new Networks section
 });
 
+document.querySelector('a[href="#compose-section"]').addEventListener('click', (e) => {
+  e.preventDefault();
+  switchSection('compose');  // For the new Networks section
+});
+
+
 document.getElementById('list-containers').addEventListener('click', fetchContainers);
 document.getElementById('list-images').addEventListener('click', listImages);
 document.getElementById('create-volume').addEventListener('click', createVolume);
 document.getElementById('list-volumes').addEventListener('click', listVolumes);
 document.getElementById('list-networks').addEventListener('click', listNetworks);
 document.getElementById('create-network').addEventListener('click', createNetwork);
+document.getElementById('start-compose').addEventListener('click', startCompose);
+document.getElementById('stop-compose').addEventListener('click', stopCompose);

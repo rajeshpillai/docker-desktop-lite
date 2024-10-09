@@ -8,6 +8,51 @@ const docker = new Docker();
 app.use(cors());
 app.use(express.json());
 
+const { exec } = require('child_process');
+const path = require('path');
+
+// Route to start Docker Compose services in a specific directory
+app.post('/compose/up', (req, res) => {
+  const { projectDir } = req.body;  // Receive the project directory
+  if (!projectDir) return res.status(400).json({ error: 'Project directory is required' });
+
+  const composeFilePath = path.resolve(projectDir, 'docker-compose.yml');
+  exec(`docker-compose -f ${composeFilePath} up -d`, { cwd: projectDir }, (error, stdout, stderr) => {
+    if (error) {
+      return res.status(500).json({ error: stderr });
+    }
+    res.json({ message: stdout });
+  });
+});
+
+// Route to stop Docker Compose services in a specific directory
+app.post('/compose/down', (req, res) => {
+  const { projectDir } = req.body;  // Receive the project directory
+  if (!projectDir) return res.status(400).json({ error: 'Project directory is required' });
+
+  exec(`docker-compose down`, { cwd: projectDir }, (error, stdout, stderr) => {
+    if (error) {
+      return res.status(500).json({ error: stderr });
+    }
+    res.json({ message: stdout });
+  });
+});
+
+// Route to list Docker Compose services in a specific directory
+app.post('/compose/services', (req, res) => {
+  const { projectDir } = req.body;  // Receive the project directory
+  if (!projectDir) return res.status(400).json({ error: 'Project directory is required' });
+
+  exec(`docker-compose ps`, { cwd: projectDir }, (error, stdout, stderr) => {
+    if (error) {
+      return res.status(500).json({ error: stderr });
+    }
+    res.json({ services: stdout });
+  });
+});
+
+
+
 // Route to fetch container health status
 app.get('/containers/:id/health', async (req, res) => {
   const { id } = req.params;

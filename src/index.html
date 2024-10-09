@@ -24,9 +24,13 @@
            <li class="mb-4">
              <a href="#networks-section" class="text-gray-300 hover:text-white">Networks</a> <!-- New link for networks -->
            </li>
-          <li>
+          <li class="mb-4">
             <a href="#volumes-section" class="text-gray-300 hover:text-white">Volumes</a>
           </li>
+          <li class="mb-4">
+            <a href="#compose-section" class="text-gray-300 hover:text-white">Docker Compose</a>
+          </li>
+
         </ul>
       </nav>
     </div>
@@ -80,10 +84,23 @@
           <button id="create-volume" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Create Volume</button>
         </div>
         <button id="prune-volumes" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-4" onclick="pruneVolumes()">Prune Unused Volumes</button>
-
       </div>
     </div>
     <div id="volumes-output"></div>
+
+      <!-- Docker Compose Section -->
+    <div id="compose-section" class="hidden">
+      <h2 class="text-xl font-bold mb-4">Docker Compose Services</h2>
+
+      <!-- Directory input for selecting project directory -->
+      <input id="project-dir" class="border p-2 w-full mb-4" type="text" placeholder="Enter project directory" oninput="selectProjectDirectory()">
+
+      <div id="compose-output"></div>
+      
+      <button id="start-compose" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-4">Start Services</button>
+      <button id="stop-compose" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-4">Stop Services</button>
+    </div>
+
   </div>
 
   <!-- Logs Modal -->
