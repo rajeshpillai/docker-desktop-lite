@@ -68,6 +68,7 @@ function renderTable(containers) {
         <tr>
           <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Container Name</th>
           <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Container ID</th>
+          <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Ports</th>
           <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Status</th>
           <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Action</th>
         </tr>
@@ -77,6 +78,7 @@ function renderTable(containers) {
           <tr class="border-b">
             <td class="py-3 px-4">${container.Names[0]}</td>
             <td class="py-3 px-4">${container.Id.substring(0, 12)}</td> <!-- Shorten the ID for better readability -->
+            <td class="py-3 px-4">${getPortMappings(container.Ports)}</td>
             <td class="py-3 px-4">
               <span class="${container.State === 'running' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} py-1 px-2 rounded-full text-xs font-semibold">
                 ${container.State === 'running' ? 'Active' : 'Inactive'}
@@ -95,6 +97,24 @@ function renderTable(containers) {
   `;
 
   output.innerHTML = table;
+}
+
+// Helper function to format port mappings
+function getPortMappings(ports) {
+  if (ports.length === 0) {
+    return 'No ports';
+  }
+
+  return ports
+    .filter(port => port.PublicPort && port.IP)  // Only include ports with valid PublicPort and IP
+    .map(port => {
+      const publicPort = port.PublicPort;
+      const privatePort = port.PrivatePort ? port.PrivatePort : 'No private port';
+      const ip = port.IP;
+
+      return `${ip}:${publicPort} -> ${privatePort}`;
+    })
+    .join(', ');
 }
 
 // Event listeners for buttons
