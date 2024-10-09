@@ -8,6 +8,18 @@ const docker = new Docker();
 app.use(cors());
 app.use(express.json());
 
+// Route to get container stats
+app.get('/containers/:id/stats', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const container = docker.getContainer(id);
+    const statsStream = await container.stats({ stream: false });
+    res.json(statsStream);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Route to list Docker networks
 app.get('/networks', async (req, res) => {
   try {
