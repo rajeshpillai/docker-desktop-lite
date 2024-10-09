@@ -4,37 +4,63 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Docker Desktop Lite</title>
-  <link rel="stylesheet" href="build.css"> <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 text-gray-900">
-  <div class="container mx-auto p-6">
-    <h1 class="text-3xl font-bold mb-6">Docker Desktop Lite</h1>
-    <div class="mb-4">
-      <button id="list-containers" class="px-4 py-2 bg-blue-500 text-white rounded">List Containers</button>
+<body>
+
+  <!-- Sidebar Menu -->
+  <div class="flex">
+    <!-- Sidebar -->
+    <div class="flex flex-col h-full bg-gray-800 text-white w-64 p-4 fixed">
+      <h1 class="text-2xl font-bold mb-6">Docker Desktop Lite</h1>
+      <nav>
+        <ul>
+          <li class="mb-4">
+            <a href="#containers-section" class="text-gray-300 hover:text-white">Containers</a>
+          </li>
+          <li>
+            <a href="#images-section" class="text-gray-300 hover:text-white">Images</a>
+          </li>
+        </ul>
+      </nav>
     </div>
-    <div id="output" class="bg-white shadow-md rounded overflow-hidden">
-      <!-- Table/Card with container data will be rendered here -->
-    </div>
-    <!-- Inspect Modal -->
-    <div id="inspect-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden flex items-center justify-center">
-      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
-        <div id="inspect-modal-content">
-          <!-- Container detailed info will be dynamically inserted here -->
+
+    <!-- Main Content -->
+    <div class="ml-64 p-4">
+      <!-- Containers Section -->
+      <div id="containers-section">
+        <h2 class="text-xl font-bold mb-4">Containers</h2>
+        <div id="output"></div>
+        <button id="list-containers" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">List Containers</button>
+      </div>
+
+      <!-- Images Section -->
+      <div id="images-section" class="hidden">
+        <h2 class="text-xl font-bold mb-4">Images</h2>
+        <div id="images-output"></div>
+        <button id="list-images" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">List Images</button>
+        <div class="mt-4">
+          <input id="image-name" class="border p-2" type="text" placeholder="Enter image name to pull" />
+          <button id="pull-image" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Pull Image</button>
         </div>
       </div>
     </div>
-
-    <!-- Logs Modal -->
-    <div id="logs-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden flex items-center justify-center">
-      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg h-96 overflow-y-auto">
-        <div id="logs-modal-content">
-          <!-- Container logs will be dynamically inserted here -->
-        </div>
-      </div>
-    </div>
-
   </div>
+
+  <!-- Inspect Modal -->
+  <div id="inspect-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
+      <div id="inspect-modal-content"></div>
+    </div>
+  </div>
+
+  <!-- Logs Modal -->
+  <div id="logs-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg h-96 overflow-y-auto">
+      <div id="logs-modal-content"></div>
+    </div>
+  </div>
+
   <script src="frontend.js"></script>
 </body>
 </html>
-

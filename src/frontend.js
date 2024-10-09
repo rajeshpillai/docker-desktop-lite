@@ -10,7 +10,7 @@ async function fetchContainers() {
   }
 }
 
-// Function to render the containers as cards (mobile) and table (desktop)
+// Function to render containers
 function renderContainers(containers) {
   const output = document.getElementById('output');
   if (!containers || containers.length === 0) {
@@ -18,18 +18,12 @@ function renderContainers(containers) {
     return;
   }
 
-  const mobileCards = containers.map(container => `
-    <div class="block md:hidden bg-white shadow-md rounded-lg mb-4 p-4">
-      <h2 class="text-xl font-bold mb-2">${container.Names[0]}</h2>
-      <p class="text-sm mb-2"><strong>Container ID:</strong> ${container.Id.substring(0, 12)}</p>
-      <p class="text-sm mb-2"><strong>Ports:</strong> ${getPortMappings(container.Ports)}</p>
-      <p class="text-sm mb-2">
-        <strong>Status:</strong> 
-        <span class="${container.State === 'running' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} py-1 px-2 rounded-full text-xs font-semibold">
-          ${container.State === 'running' ? 'Running' : 'Stopped'}
-        </span>
-      </p>
-      <div class="mt-4 flex space-x-2">
+  const containerRows = containers.map(container => `
+    <div class="bg-white shadow-md rounded-lg mb-4 p-4">
+      <h2 class="text-lg font-bold">${container.Names[0]}</h2>
+      <p><strong>Container ID:</strong> ${container.Id.substring(0, 12)}</p>
+      <p><strong>Status:</strong> ${container.State === 'running' ? 'Running' : 'Stopped'}</p>
+      <div class="mt-2">
         <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded" onclick="inspectContainer('${container.Id}')">Inspect</button>
         <button class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded" onclick="viewLogs('${container.Id}')">View Logs</button>
         ${container.State !== 'running' ? 
@@ -41,44 +35,7 @@ function renderContainers(containers) {
     </div>
   `).join('');
 
-  const desktopTable = `
-    <table class="hidden md:table min-w-full bg-white border-collapse">
-      <thead class="bg-purple-600 text-white">
-        <tr>
-          <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Container Name</th>
-          <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Container ID</th>
-          <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Ports</th>
-          <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Status</th>
-          <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${containers.map(container => `
-          <tr class="border-b">
-            <td class="py-3 px-4">${container.Names[0]}</td>
-            <td class="py-3 px-4">${container.Id.substring(0, 12)}</td>
-            <td class="py-3 px-4">${getPortMappings(container.Ports)}</td>
-            <td class="py-3 px-4">
-              <span class="${container.State === 'running' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} py-1 px-2 rounded-full text-xs font-semibold">
-                ${container.State === 'running' ? 'Running' : 'Stopped'}
-              </span>
-            </td>
-            <td class="py-3 px-4">
-              <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded" onclick="inspectContainer('${container.Id}')">Inspect</button>
-              <button class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded" onclick="viewLogs('${container.Id}')">View Logs</button>
-              ${container.State !== 'running' ? 
-                `<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded mr-2" onclick="startContainer('${container.Id}')">Start</button>` :
-                `<button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded mr-2" onclick="stopContainer('${container.Id}')">Stop</button>`
-              }
-              <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded ml-2" onclick="removeContainer('${container.Id}')">Remove</button>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
-
-  output.innerHTML = mobileCards + desktopTable;
+  output.innerHTML = containerRows;
 }
 
 // Function to view container logs
@@ -87,13 +44,13 @@ async function viewLogs(id) {
     const response = await fetch(`http://localhost:3000/containers/${id}/logs`);
     if (!response.ok) throw new Error(`Error fetching logs: ${response.statusText}`);
     const logs = await response.text();
-    displayLogsModal(logs); // Show logs in a modal
+    displayLogsModal(logs);
   } catch (error) {
     console.error('Error fetching logs:', error);
   }
 }
 
-// Function to display logs in a modal
+// Function to display logs in modal
 function displayLogsModal(logs) {
   const modal = document.getElementById('logs-modal');
   const modalContent = document.getElementById('logs-modal-content');
@@ -103,23 +60,22 @@ function displayLogsModal(logs) {
     <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded mt-4" onclick="closeLogsModal()">Close</button>
   `;
 
-  // Show the modal
   modal.classList.remove('hidden');
 }
 
-// Function to close the logs modal
+// Function to close logs modal
 function closeLogsModal() {
   const modal = document.getElementById('logs-modal');
   modal.classList.add('hidden');
 }
 
-// Function to inspect a container (Detailed view)
+// Function to inspect container details
 async function inspectContainer(id) {
   try {
     const response = await fetch(`http://localhost:3000/containers/${id}/inspect`);
     if (!response.ok) throw new Error(`Error inspecting container: ${response.statusText}`);
     const data = await response.json();
-    displayInspectModal(data); // Show details in a modal
+    displayInspectModal(data);
   } catch (error) {
     console.error('Error inspecting container:', error);
   }
@@ -136,70 +92,109 @@ function displayInspectModal(containerInfo) {
     <p><strong>Image:</strong> ${containerInfo.Config.Image}</p>
     <p><strong>State:</strong> ${containerInfo.State.Status}</p>
     <p><strong>Created:</strong> ${new Date(containerInfo.Created).toLocaleString()}</p>
-    <p><strong>Env Variables:</strong> ${containerInfo.Config.Env.join(', ')}</p>
-    <p><strong>Volumes:</strong> ${JSON.stringify(containerInfo.Mounts)}</p>
     <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded mt-4" onclick="closeModal()">Close</button>
   `;
 
-  // Show the modal
   modal.classList.remove('hidden');
 }
 
-// Function to close the inspect modal
+// Function to close inspect modal
 function closeModal() {
   const modal = document.getElementById('inspect-modal');
   modal.classList.add('hidden');
 }
 
-// Function to start a container
-async function startContainer(id) {
+// Function to switch sections (Containers vs Images)
+function switchSection(section) {
+  const containersSection = document.getElementById('containers-section');
+  const imagesSection = document.getElementById('images-section');
+
+  if (section === 'containers') {
+    containersSection.classList.remove('hidden');
+    imagesSection.classList.add('hidden');
+  } else if (section === 'images') {
+    containersSection.classList.add('hidden');
+    imagesSection.classList.remove('hidden');
+  }
+}
+
+// Function to list Docker images
+async function listImages() {
   try {
-    const response = await fetch(`http://localhost:3000/containers/${id}/start`, { method: 'POST' });
-    if (!response.ok) throw new Error(`Error starting container: ${response.statusText}`);
-    alert('Container started');
-    fetchContainers(); // Refresh the container list
+    const response = await fetch('http://localhost:3000/images');
+    if (!response.ok) throw new Error(`Error fetching images: ${response.statusText}`);
+    const data = await response.json();
+    renderImages(data.images);
   } catch (error) {
-    console.error('Error starting container:', error);
+    console.error('Error fetching images:', error);
   }
 }
 
-// Function to stop a container
-async function stopContainer(id) {
+// Function to render Docker images
+function renderImages(images) {
+  const output = document.getElementById('images-output');
+  if (!images || images.length === 0) {
+    output.innerHTML = '<p class="text-red-500">No images found.</p>';
+    return;
+  }
+
+  const imageRows = images.map(image => `
+    <div class="bg-white shadow-md rounded-lg mb-4 p-4">
+      <h2 class="text-lg font-bold">${image.RepoTags ? image.RepoTags.join(', ') : 'Unnamed Image'}</h2>
+      <p><strong>Image ID:</strong> ${image.Id.substring(0, 12)}</p>
+      <p><strong>Size:</strong> ${Math.round(image.Size / 1024 / 1024)} MB</p>
+      <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded mt-2" onclick="removeImage('${image.Id}')">Remove</button>
+    </div>
+  `).join('');
+
+  output.innerHTML = imageRows;
+}
+
+// Function to pull a Docker image
+async function pullImage() {
+  const imageName = document.getElementById('image-name').value;
+  if (!imageName) return alert('Please enter an image name.');
+
   try {
-    const response = await fetch(`http://localhost:3000/containers/${id}/stop`, { method: 'POST' });
-    if (!response.ok) throw new Error(`Error stopping container: ${response.statusText}`);
-    alert('Container stopped');
-    fetchContainers(); // Refresh the container list
+    const response = await fetch('http://localhost:3000/images/pull', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageName })
+    });
+    if (!response.ok) throw new Error(`Error pulling image: ${response.statusText}`);
+    const data = await response.json();
+    alert(data.message);
+    listImages();
   } catch (error) {
-    console.error('Error stopping container:', error);
+    console.error('Error pulling image:', error);
   }
 }
 
-// Function to remove a container
-async function removeContainer(id) {
-  if (confirm("Are you sure you want to remove this container?")) {
-    try {
-      const response = await fetch(`http://localhost:3000/containers/${id}/remove`, { method: 'DELETE' });
-      if (!response.ok) throw new Error(`Error removing container: ${response.statusText}`);
-      alert('Container removed');
-      fetchContainers(); // Refresh the container list
-    } catch (error) {
-      console.error('Error removing container:', error);
-    }
+// Function to remove a Docker image
+async function removeImage(id) {
+  if (!confirm('Are you sure you want to remove this image?')) return;
+
+  try {
+    const response = await fetch(`http://localhost:3000/images/${id}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error(`Error removing image: ${response.statusText}`);
+    alert('Image removed successfully.');
+    listImages();
+  } catch (error) {
+    console.error('Error removing image:', error);
   }
 }
 
-// Helper function to format port mappings
-function getPortMappings(ports) {
-  if (!ports || ports.length === 0) {
-    return 'No ports';
-  }
-
-  return ports
-    .filter(port => port.PublicPort && port.IP)
-    .map(port => `${port.IP}:${port.PublicPort} -> ${port.PrivatePort}`)
-    .join(', ');
-}
-
-// Event listener for the List Containers button
+// Event listeners for navigation and actions
 document.getElementById('list-containers').addEventListener('click', fetchContainers);
+document.getElementById('list-images').addEventListener('click', listImages);
+document.getElementById('pull-image').addEventListener('click', pullImage);
+
+document.querySelector('a[href="#containers-section"]').addEventListener('click', (e) => {
+  e.preventDefault();
+  switchSection('containers');
+});
+
+document.querySelector('a[href="#images-section"]').addEventListener('click', (e) => {
+  e.preventDefault();
+  switchSection('images');
+});

@@ -8,6 +8,51 @@ const docker = new Docker();
 app.use(cors());
 app.use(express.json());
 
+// List all images
+app.get('/images', async (req, res) => {
+  try {
+    const images = await docker.listImages();
+    res.json({ images });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Pull a Docker image
+app.post('/images/pull', async (req, res) => {
+  const { imageName } = req.body;
+  try {
+    await docker.pull(imageName, {}, (err, stream) => {
+      if (err) return res.status(500).json({ error: err.message });
+
+      docker.modem.followProgress(stream, onFinished, onProgress);
+
+      function onFinished(err, output) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: `Image ${imageName} pulled successfully.` });
+      }
+
+      function onProgress(event) {
+        console.log(event);
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Remove a Docker image
+app.delete('/images/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await docker.getImage(id).remove();
+    res.json({ message: 'Image removed successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // List all containers (running and stopped)
 app.get('/containers', async (req, res) => {
   try {
