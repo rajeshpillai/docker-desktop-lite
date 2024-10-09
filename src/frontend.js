@@ -1,3 +1,35 @@
+// Function to start a Docker container
+// Function to start a Docker container
+async function startContainer(id) {
+  try {
+    const response = await fetch(`http://localhost:3000/containers/${id}/start`, { method: 'POST' });
+    if (!response.ok) throw new Error(`Error starting container: ${response.statusText}`);
+    alert('Container started successfully.');
+    fetchContainers();  // Refresh the container list
+  } catch (error) {
+    console.error('Error starting container:', error);
+  }
+}
+
+// Function to stop a Docker container
+async function stopContainer(id) {
+  try {
+    const response = await fetch(`http://localhost:3000/containers/${id}/stop`, { method: 'POST' });
+    if (response.status === 304) {
+      alert('Container is already stopped.');
+    } else if (!response.ok) {
+      throw new Error(`Error stopping container: ${response.statusText}`);
+    } else {
+      alert('Container stopped successfully.');
+    }
+    fetchContainers();  // Refresh the container list
+  } catch (error) {
+    console.error('Error stopping container:', error);
+  }
+}
+
+
+
 // Function to fetch and list containers using Fetch API
 async function fetchContainers() {
   try {
@@ -11,6 +43,7 @@ async function fetchContainers() {
 }
 
 // Function to render containers
+// Function to render containers
 function renderContainers(containers) {
   const output = document.getElementById('output');
   if (!containers || containers.length === 0) {
@@ -18,25 +51,30 @@ function renderContainers(containers) {
     return;
   }
 
-  const containerRows = containers.map(container => `
-    <div class="bg-white shadow-md rounded-lg mb-4 p-4">
-      <h2 class="text-lg font-bold">${container.Names[0]}</h2>
-      <p><strong>Container ID:</strong> ${container.Id.substring(0, 12)}</p>
-      <p><strong>Status:</strong> ${container.State === 'running' ? 'Running' : 'Stopped'}</p>
-      <div class="mt-2">
-        <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded" onclick="inspectContainer('${container.Id}')">Inspect</button>
-        <button class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded" onclick="viewLogs('${container.Id}')">View Logs</button>
-        ${container.State !== 'running' ? 
-          `<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded" onclick="startContainer('${container.Id}')">Start</button>` :
-          `<button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded" onclick="stopContainer('${container.Id}')">Stop</button>`
-        }
-        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded" onclick="removeContainer('${container.Id}')">Remove</button>
+  const containerRows = containers.map(container => {
+    const isRunning = container.State === 'running';
+    const buttonLabel = isRunning ? 'Stop' : 'Start';
+    const buttonClass = isRunning ? 'bg-red-500 hover:bg-red-700' : 'bg-blue-500 hover:bg-blue-700';
+    const buttonAction = isRunning ? `stopContainer('${container.Id}')` : `startContainer('${container.Id}')`;
+
+    return `
+      <div class="bg-white shadow-md rounded-lg mb-4 p-4">
+        <h2 class="text-lg font-bold">${container.Names[0]}</h2>
+        <p><strong>Container ID:</strong> ${container.Id.substring(0, 12)}</p>
+        <p><strong>Status:</strong> ${isRunning ? 'Running' : 'Stopped'}</p>
+        <div class="mt-2">
+          <button class="${buttonClass} text-white font-bold py-1 px-3 rounded" onclick="${buttonAction}">${buttonLabel}</button>
+          <button class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded" onclick="inspectContainer('${container.Id}')">Inspect</button>
+          <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded" onclick="viewLogs('${container.Id}')">View Logs</button>
+          <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded" onclick="removeContainer('${container.Id}')">Remove</button>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 
   output.innerHTML = containerRows;
 }
+
 
 // Function to view container logs
 async function viewLogs(id) {
@@ -104,17 +142,22 @@ function closeModal() {
   modal.classList.add('hidden');
 }
 
-// Function to switch sections (Containers vs Images)
+// Function to switch between Containers, Images, and Volumes sections
 function switchSection(section) {
   const containersSection = document.getElementById('containers-section');
   const imagesSection = document.getElementById('images-section');
+  const volumesSection = document.getElementById('volumes-section');
+
+  containersSection.classList.add('hidden');
+  imagesSection.classList.add('hidden');
+  volumesSection.classList.add('hidden');
 
   if (section === 'containers') {
     containersSection.classList.remove('hidden');
-    imagesSection.classList.add('hidden');
   } else if (section === 'images') {
-    containersSection.classList.add('hidden');
     imagesSection.classList.remove('hidden');
+  } else if (section === 'volumes') {
+    volumesSection.classList.remove('hidden');
   }
 }
 
@@ -184,11 +227,72 @@ async function removeImage(id) {
   }
 }
 
-// Event listeners for navigation and actions
-document.getElementById('list-containers').addEventListener('click', fetchContainers);
-document.getElementById('list-images').addEventListener('click', listImages);
-document.getElementById('pull-image').addEventListener('click', pullImage);
+// Function to list Docker volumes
+async function listVolumes() {
+  try {
+    const response = await fetch('http://localhost:3000/volumes');
+    if (!response.ok) throw new Error(`Error fetching volumes: ${response.statusText}`);
+    const data = await response.json();
+    renderVolumes(data.volumes);
+  } catch (error) {
+    console.error('Error fetching volumes:', error);
+  }
+}
 
+// Function to render Docker volumes
+function renderVolumes(volumes) {
+  const output = document.getElementById('volumes-output');
+  if (!volumes || volumes.length === 0) {
+    output.innerHTML = '<p class="text-red-500">No volumes found.</p>';
+    return;
+  }
+
+  const volumeRows = volumes.map(volume => `
+    <div class="bg-white shadow-md rounded-lg mb-4 p-4">
+      <h2 class="text-lg font-bold">${volume.Name}</h2>
+      <p><strong>Mountpoint:</strong> ${volume.Mountpoint}</p>
+      <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded mt-2" onclick="removeVolume('${volume.Name}')">Remove</button>
+    </div>
+  `).join('');
+
+  output.innerHTML = volumeRows;
+}
+
+// Function to create a new Docker volume
+async function createVolume() {
+  const volumeName = document.getElementById('volume-name').value;
+  if (!volumeName) return alert('Please enter a volume name.');
+
+  try {
+    const response = await fetch('http://localhost:3000/volumes/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ volumeName })
+    });
+    if (!response.ok) throw new Error(`Error creating volume: ${response.statusText}`);
+    const data = await response.json();
+    alert(data.message);
+    listVolumes();  // Refresh the volume list
+  } catch (error) {
+    console.error('Error creating volume:', error);
+  }
+}
+
+// Function to remove a Docker volume
+async function removeVolume(name) {
+  if (!confirm(`Are you sure you want to remove the volume "${name}"?`)) return;
+
+  try {
+    const response = await fetch(`http://localhost:3000/volumes/${name}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error(`Error removing volume: ${response.statusText}`);
+    alert('Volume removed successfully.');
+    listVolumes();  // Refresh the volume list
+  } catch (error) {
+    console.error('Error removing volume:', error);
+  }
+}
+
+// Event listeners for navigation and actions
 document.querySelector('a[href="#containers-section"]').addEventListener('click', (e) => {
   e.preventDefault();
   switchSection('containers');
@@ -198,3 +302,13 @@ document.querySelector('a[href="#images-section"]').addEventListener('click', (e
   e.preventDefault();
   switchSection('images');
 });
+
+document.querySelector('a[href="#volumes-section"]').addEventListener('click', (e) => {
+  e.preventDefault();
+  switchSection('volumes');
+});
+
+document.getElementById('list-containers').addEventListener('click', fetchContainers);
+document.getElementById('list-images').addEventListener('click', listImages);
+document.getElementById('create-volume').addEventListener('click', createVolume);
+document.getElementById('list-volumes').addEventListener('click', listVolumes);

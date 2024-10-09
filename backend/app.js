@@ -8,6 +8,40 @@ const docker = new Docker();
 app.use(cors());
 app.use(express.json());
 
+// List all Docker volumes
+app.get('/volumes', async (req, res) => {
+  try {
+    const volumes = await docker.listVolumes();
+    res.json({ volumes: volumes.Volumes });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create a new Docker volume
+app.post('/volumes/create', async (req, res) => {
+  const { volumeName } = req.body;
+  try {
+    const volume = await docker.createVolume({ Name: volumeName });
+    res.json({ message: `Volume ${volumeName} created successfully`, volume });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Remove a Docker volume
+app.delete('/volumes/:name', async (req, res) => {
+  const { name } = req.params;
+  try {
+    const volume = docker.getVolume(name);
+    await volume.remove();
+    res.json({ message: `Volume ${name} removed successfully` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // List all images
 app.get('/images', async (req, res) => {
   try {
@@ -108,16 +142,25 @@ app.post('/containers/:id/start', async (req, res) => {
 });
 
 // Stop a container
+// Stop a Docker container
 app.post('/containers/:id/stop', async (req, res) => {
   const { id } = req.params;
   try {
     const container = docker.getContainer(id);
-    await container.stop();
-    res.json({ message: 'Container stopped' });
+    const containerInfo = await container.inspect();
+
+    // Check if the container is already stopped or exited
+    if (containerInfo.State.Status === 'exited' || containerInfo.State.Status === 'stopped') {
+      res.status(304).json({ message: `Container ${id} is already stopped.` });
+    } else {
+      await container.stop();
+      res.json({ message: `Container ${id} stopped successfully` });
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // Inspect a container (Detailed info)
 app.get('/containers/:id/inspect', async (req, res) => {

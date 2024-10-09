@@ -18,8 +18,11 @@
           <li class="mb-4">
             <a href="#containers-section" class="text-gray-300 hover:text-white">Containers</a>
           </li>
-          <li>
+          <li class="mb-4">
             <a href="#images-section" class="text-gray-300 hover:text-white">Images</a>
+          </li>
+          <li>
+            <a href="#volumes-section" class="text-gray-300 hover:text-white">Volumes</a>
           </li>
         </ul>
       </nav>
@@ -37,14 +40,25 @@
       <!-- Images Section -->
       <div id="images-section" class="hidden">
         <h2 class="text-xl font-bold mb-4">Images</h2>
-        <div id="images-output"></div>
         <button id="list-images" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">List Images</button>
         <div class="mt-4">
           <input id="image-name" class="border p-2" type="text" placeholder="Enter image name to pull" />
           <button id="pull-image" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Pull Image</button>
         </div>
+        <div id="images-output"></div>
+      </div>
+
+      <!-- Volumes Section -->
+      <div id="volumes-section" class="hidden">
+        <h2 class="text-xl font-bold mb-4">Volumes</h2>
+        <button id="list-volumes" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">List Volumes</button>
+        <div class="mt-4">
+          <input id="volume-name" class="border p-2" type="text" placeholder="Enter volume name" />
+          <button id="create-volume" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Create Volume</button>
+        </div>
       </div>
     </div>
+    <div id="volumes-output"></div>
   </div>
 
   <!-- Inspect Modal -->
