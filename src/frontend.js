@@ -1,3 +1,74 @@
+// Function to fetch and display Docker networks
+async function listNetworks() {
+  try {
+    const response = await fetch('http://localhost:3000/networks');
+    if (!response.ok) throw new Error(`Error fetching networks: ${response.statusText}`);
+    const data = await response.json();
+    renderNetworks(data.networks);
+  } catch (error) {
+    console.error('Error fetching networks:', error);
+  }
+}
+
+// Function to create a new Docker network
+async function createNetwork() {
+  const networkName = document.getElementById('network-name').value;
+  const networkDriver = document.getElementById('network-driver').value;
+  
+  if (!networkName) return alert('Please enter a network name.');
+
+  try {
+    const response = await fetch('http://localhost:3000/networks/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: networkName, driver: networkDriver })
+    });
+    if (!response.ok) throw new Error(`Error creating network: ${response.statusText}`);
+    const data = await response.json();
+    alert(data.message);
+    listNetworks();  // Refresh the network list
+  } catch (error) {
+    console.error('Error creating network:', error);
+  }
+}
+
+// Function to remove a Docker network
+async function removeNetwork(id) {
+  if (!confirm('Are you sure you want to remove this network?')) return;
+
+  try {
+    const response = await fetch(`http://localhost:3000/networks/${id}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error(`Error removing network: ${response.statusText}`);
+    alert('Network removed successfully.');
+    listNetworks();  // Refresh the network list
+  } catch (error) {
+    console.error('Error removing network:', error);
+  }
+}
+
+
+// Function to render Docker networks in the UI
+function renderNetworks(networks) {
+  const output = document.getElementById('networks-output');
+  if (!networks || networks.length === 0) {
+    output.innerHTML = '<p class="text-red-500">No networks found.</p>';
+    return;
+  }
+
+  const networkRows = networks.map(network => `
+    <div class="bg-white shadow-md rounded-lg mb-4 p-4">
+      <h2 class="text-lg font-bold">${network.Name}</h2>
+      <p><strong>ID:</strong> ${network.Id}</p>
+      <p><strong>Driver:</strong> ${network.Driver}</p>
+      <p><strong>Scope:</strong> ${network.Scope}</p>
+      <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded" onclick="removeNetwork('${network.Id}')">Remove</button>
+    </div>
+  `).join('');
+
+  output.innerHTML = networkRows;
+}
+
+
 // Function to prune unused Docker volumes
 async function pruneVolumes() {
   if (!confirm('Are you sure you want to prune all unused volumes?')) return;
@@ -56,7 +127,6 @@ async function fetchContainers() {
   }
 }
 
-// Function to render containers
 // Function to render containers
 function renderContainers(containers) {
   const output = document.getElementById('output');
@@ -192,19 +262,26 @@ function switchSection(section) {
   const containersSection = document.getElementById('containers-section');
   const imagesSection = document.getElementById('images-section');
   const volumesSection = document.getElementById('volumes-section');
+  const networksSection = document.getElementById('networks-section');  // New networks section
 
+  // Hide all sections
   containersSection.classList.add('hidden');
   imagesSection.classList.add('hidden');
   volumesSection.classList.add('hidden');
+  networksSection.classList.add('hidden');  // Hide networks section
 
+  // Show the selected section
   if (section === 'containers') {
     containersSection.classList.remove('hidden');
   } else if (section === 'images') {
     imagesSection.classList.remove('hidden');
   } else if (section === 'volumes') {
     volumesSection.classList.remove('hidden');
+  } else if (section === 'networks') {  // Show networks section
+    networksSection.classList.remove('hidden');
   }
 }
+
 
 // Function to list Docker images
 async function listImages() {
@@ -359,7 +436,14 @@ document.querySelector('a[href="#volumes-section"]').addEventListener('click', (
   switchSection('volumes');
 });
 
+document.querySelector('a[href="#networks-section"]').addEventListener('click', (e) => {
+  e.preventDefault();
+  switchSection('networks');  // For the new Networks section
+});
+
 document.getElementById('list-containers').addEventListener('click', fetchContainers);
 document.getElementById('list-images').addEventListener('click', listImages);
 document.getElementById('create-volume').addEventListener('click', createVolume);
 document.getElementById('list-volumes').addEventListener('click', listVolumes);
+document.getElementById('list-networks').addEventListener('click', listNetworks);
+document.getElementById('create-network').addEventListener('click', createNetwork);

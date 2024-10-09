@@ -21,6 +21,9 @@
           <li class="mb-4">
             <a href="#images-section" class="text-gray-300 hover:text-white">Images</a>
           </li>
+           <li class="mb-4">
+             <a href="#networks-section" class="text-gray-300 hover:text-white">Networks</a> <!-- New link for networks -->
+           </li>
           <li>
             <a href="#volumes-section" class="text-gray-300 hover:text-white">Volumes</a>
           </li>
@@ -36,6 +39,26 @@
         <div id="output"></div>
         <button id="list-containers" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">List Containers</button>
       </div>
+
+      <!-- Networks Section -->
+      <div id="networks-section" class="hidden">
+        <h2 class="text-xl font-bold mb-4">Networks</h2>
+        <button id="list-networks" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">List Networks</button>
+        
+        <!-- Network Creation Form -->
+        <div class="mt-4">
+          <input id="network-name" class="border p-2" type="text" placeholder="Enter network name" />
+          <select id="network-driver" class="border p-2">
+            <option value="bridge">Bridge</option>
+            <option value="overlay">Overlay</option>
+            <option value="host">Host</option>
+          </select>
+          <button id="create-network" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Create Network</button>
+        </div>
+        <div id="networks-output"></div>
+
+      </div>
+
 
       <!-- Images Section -->
       <div id="images-section" class="hidden">
@@ -70,9 +93,6 @@
     </div>
   </div>
 
-  <!-- Inspect Modal for Volumes -->
-  <!-- Inspect Modal for Volumes -->
-  <!-- Inspect Modal for Volumes -->
   <!-- Inspect Modal for Volumes -->
   <div id="inspect-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden flex items-center justify-center z-50">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-lg max-h-screen relative">

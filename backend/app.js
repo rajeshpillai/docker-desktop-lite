@@ -8,6 +8,41 @@ const docker = new Docker();
 app.use(cors());
 app.use(express.json());
 
+// Route to list Docker networks
+app.get('/networks', async (req, res) => {
+  try {
+    const networks = await docker.listNetworks();
+    res.json({ networks });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Route to create a Docker network
+app.post('/networks/create', async (req, res) => {
+  const { name, driver } = req.body;
+  try {
+    const network = await docker.createNetwork({ Name: name, Driver: driver });
+    res.json({ message: `Network ${name} created successfully.` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Route to remove a Docker network
+app.delete('/networks/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const network = docker.getNetwork(id);
+    await network.remove();
+    res.json({ message: `Network ${id} removed successfully.` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
 // Inspect a Docker volume by name
 app.get('/volumes/:name/inspect', async (req, res) => {
   const { name } = req.params;
