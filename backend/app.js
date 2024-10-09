@@ -8,6 +8,19 @@ const docker = new Docker();
 app.use(cors());
 app.use(express.json());
 
+// Inspect a Docker volume by name
+app.get('/volumes/:name/inspect', async (req, res) => {
+  const { name } = req.params;
+  try {
+    const volume = docker.getVolume(name);
+    const volumeInfo = await volume.inspect();
+    res.json(volumeInfo);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Prune unused Docker volumes
 app.delete('/volumes/prune', async (req, res) => {
   try {

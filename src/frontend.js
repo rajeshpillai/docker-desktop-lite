@@ -121,6 +121,37 @@ function closeLogsModal() {
   modal.classList.add('hidden');
 }
 
+// Function to fetch and inspect Docker volume
+async function inspectVolume(name) {
+  try {
+    const response = await fetch(`http://localhost:3000/volumes/${name}/inspect`);
+    if (!response.ok) throw new Error(`Error fetching volume details: ${response.statusText}`);
+    const volumeDetails = await response.json();
+    displayVolumeDetails(volumeDetails);
+  } catch (error) {
+    console.error('Error fetching volume details:', error);
+  }
+}
+
+// Function to display volume details in a modal or section
+function displayVolumeDetails(volume) {
+  const modal = document.getElementById('inspect-modal');
+  const modalContent = document.getElementById('inspect-modal-content');
+
+  modalContent.innerHTML = `
+    <h2 class="text-lg font-bold">Volume: ${volume.Name}</h2>
+    <p><strong>Driver:</strong> ${volume.Driver}</p>
+    <p><strong>Mountpoint:</strong> ${volume.Mountpoint}</p>
+    <p><strong>Created At:</strong> ${new Date(volume.CreatedAt).toLocaleString()}</p>
+    <pre class="whitespace-pre-wrap break-words"><strong>Labels:</strong> ${JSON.stringify(volume.Labels, null, 2) || 'None'}</pre>
+  `;
+
+  modal.classList.remove('hidden');
+}
+
+
+
+
 // Function to inspect container details
 async function inspectContainer(id) {
   try {
@@ -241,6 +272,7 @@ async function removeImage(id) {
   }
 }
 
+
 // Function to list Docker volumes
 async function listVolumes() {
   try {
@@ -254,6 +286,7 @@ async function listVolumes() {
 }
 
 // Function to render Docker volumes
+// Function to render Docker volumes
 function renderVolumes(volumes) {
   const output = document.getElementById('volumes-output');
   if (!volumes || volumes.length === 0) {
@@ -265,13 +298,16 @@ function renderVolumes(volumes) {
     <div class="bg-white shadow-md rounded-lg mb-4 p-4">
       <h2 class="text-lg font-bold">${volume.Name}</h2>
       <p><strong>Mountpoint:</strong> ${volume.Mountpoint}</p>
-      <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded mt-2" onclick="removeVolume('${volume.Name}')">Remove</button>
-      
+      <div class="mt-2">
+        <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded" onclick="inspectVolume('${volume.Name}')">Inspect</button>
+        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded mt-2" onclick="removeVolume('${volume.Name}')">Remove</button>
+      </div>
     </div>
   `).join('');
 
   output.innerHTML = volumeRows;
 }
+
 
 // Function to create a new Docker volume
 async function createVolume() {
