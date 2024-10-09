@@ -18,6 +18,19 @@ app.get('/containers', async (req, res) => {
   }
 });
 
+// Inspect a container (Detailed info)
+app.get('/containers/:id/inspect', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const container = docker.getContainer(id);
+    const data = await container.inspect();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Start a container
 app.post('/containers/:id/start', async (req, res) => {
   const { id } = req.params;

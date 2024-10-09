@@ -13,8 +13,17 @@
       <button id="list-containers" class="px-4 py-2 bg-blue-500 text-white rounded">List Containers</button>
     </div>
     <div id="output" class="bg-white shadow-md rounded overflow-hidden">
-      <!-- Table with container data will be rendered here -->
+      <!-- Table/Card with container data will be rendered here -->
     </div>
+    <!-- Inspect Modal -->
+    <div id="inspect-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden flex items-center justify-center">
+      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
+        <div id="inspect-modal-content">
+          <!-- Container detailed info will be dynamically inserted here -->
+        </div>
+      </div>
+    </div>
+
   </div>
   <script src="frontend.js"></script>
 </body>
