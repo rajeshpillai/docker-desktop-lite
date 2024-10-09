@@ -8,15 +8,16 @@ const docker = new Docker();
 app.use(cors());
 app.use(express.json());
 
-// List all containers
+// List all containers (running and stopped)
 app.get('/containers', async (req, res) => {
   try {
-    const containers = await docker.listContainers({ all: true });
+    const containers = await docker.listContainers({ all: true });  // Add { all: true }
     res.json({ containers });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // Inspect a container (Detailed info)
 app.get('/containers/:id/inspect', async (req, res) => {
@@ -29,6 +30,24 @@ app.get('/containers/:id/inspect', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Get container logs
+app.get('/containers/:id/logs', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const container = docker.getContainer(id);
+    const logs = await container.logs({
+      stdout: true,
+      stderr: true,
+      follow: false,  // Set to true if you want to follow the logs in real-time
+      tail: 100       // Fetch the last 100 lines
+    });
+    res.send(logs.toString());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 
 // Start a container
