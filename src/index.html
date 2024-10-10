@@ -40,8 +40,8 @@
       <!-- Containers Section -->
       <div id="containers-section">
         <h2 class="text-xl font-bold mb-4">Containers</h2>
-        <div id="output"></div>
         <button id="list-containers" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">List Containers</button>
+        <div id="output"></div>
       </div>
 
       <!-- Networks Section -->
@@ -63,7 +63,6 @@
 
       </div>
 
-
       <!-- Images Section -->
       <div id="images-section" class="hidden">
         <h2 class="text-xl font-bold mb-4">Images</h2>
@@ -84,21 +83,22 @@
           <button id="create-volume" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Create Volume</button>
         </div>
         <button id="prune-volumes" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-4" onclick="pruneVolumes()">Prune Unused Volumes</button>
+        <div id="volumes-output"></div> <!-- Move the volumes-output inside the volumes-section -->
       </div>
-    </div>
-    <div id="volumes-output"></div>
 
       <!-- Docker Compose Section -->
-    <div id="compose-section" class="hidden">
-      <h2 class="text-xl font-bold mb-4">Docker Compose Services</h2>
+      <div id="compose-section" class="hidden">
+        <h2 class="text-xl font-bold mb-4">Docker Compose Services</h2>
 
-      <!-- Directory input for selecting project directory -->
-      <input id="project-dir" class="border p-2 w-full mb-4" type="text" placeholder="Enter project directory" oninput="selectProjectDirectory()">
+        <!-- Directory input for selecting project directory -->
+        <input id="project-dir" class="border p-2 w-full mb-4" type="text" placeholder="Enter project directory" oninput="selectProjectDirectory()">
 
-      <div id="compose-output"></div>
-      
-      <button id="start-compose" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-4">Start Services</button>
-      <button id="stop-compose" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-4">Stop Services</button>
+        <div id="compose-output"></div>
+        
+        <button id="start-compose" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-4">Start Services</button>
+        <button id="stop-compose" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-4">Stop Services</button>
+      </div>
+
     </div>
 
   </div>
@@ -113,8 +113,6 @@
   <!-- Inspect Modal for Volumes -->
   <div id="inspect-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden flex items-center justify-center z-50">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-lg max-h-screen relative">
-      <!-- Fixed Close Button at the top -->
-      <button class="absolute top-2 right-2 bg-gray-500 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded" onclick="closeModal()">Close</button>
       <!-- Modal Content with Scroll -->
       <div class="p-6 overflow-y-auto max-h-[80vh]">
         <h2 class="text-xl font-bold mb-4">Volume Details</h2>
@@ -131,8 +129,6 @@
       <div id="stats-modal-content"></div>
     </div>
   </div>
-
-
 
   <script type="module" src="frontend.js"></script>
 </body>

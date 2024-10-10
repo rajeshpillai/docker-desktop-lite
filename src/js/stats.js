@@ -62,4 +62,24 @@ function calculateMemoryUsage(stats) {
     stats.memory_stats.stats
   ) {
     const usedMemory = stats.memory_stats.usage - (stats.memory_stats.stats.cache || 0);
-    const availableMemory =
+    const availableMemory = stats.memory_stats.limit;
+    const memoryUsage = (usedMemory / availableMemory) * 100;
+    return memoryUsage.toFixed(2);
+  }
+
+  return 'N/A';
+}
+
+// Utility function to format bytes
+function formatBytes(bytes) {
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes === 0) return '0 Byte';
+  const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+  return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+}
+
+// Function to close the stats modal
+export function closeStatsModal() {
+  const modal = document.getElementById('stats-modal');
+  modal.classList.add('hidden');
+}
