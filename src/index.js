@@ -1,10 +1,21 @@
-const { app, BrowserWindow } = require('electron');
-const path = require('node:path');
+// const { app, BrowserWindow } = require('electron');
+// const path = require('node:path');
+
+// // Handle creating/removing shortcuts on Windows when installing/uninstalling.
+// if (require('electron-squirrel-startup')) {
+//   app.quit();
+// }
+
+import { app, BrowserWindow } from 'electron';
+import path from 'node:path';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
+import electronSquirrelStartup from 'electron-squirrel-startup';
+
+if (electronSquirrelStartup) {
   app.quit();
 }
+
 
 const createWindow = () => {
   // Create the browser window.

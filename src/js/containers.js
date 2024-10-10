@@ -1,5 +1,18 @@
 // containers.js
 
+// Function to fetch and display container health status
+async function fetchHealthStatus(id) {
+  try {
+    const response = await fetch(`http://localhost:3000/containers/${id}/health`);
+    if (!response.ok) throw new Error(`Error fetching health status: ${response.statusText}`);
+    const data = await response.json();
+    return data.health;
+  } catch (error) {
+    console.error('Error fetching health status:', error);
+    return 'Error';
+  }
+}
+
 export async function fetchContainers() {
   try {
     const response = await fetch('http://localhost:3000/containers');
@@ -38,6 +51,7 @@ export async function stopContainer(id) {
   }
 }
 
+// Render containers and create buttons for starting/stopping containers
 async function renderContainers(containers) {
   const output = document.getElementById('output');
   if (!containers || containers.length === 0) {
@@ -50,7 +64,7 @@ async function renderContainers(containers) {
     const buttonLabel = isRunning ? 'Stop' : 'Start';
     const buttonAction = isRunning ? `stopContainer('${container.Id}')` : `startContainer('${container.Id}')`;
 
-    // Fetch health status for each container
+    // Fetch health status for each container (optional, as mentioned before)
     const healthStatus = await fetchHealthStatus(container.Id);
 
     return `
@@ -59,7 +73,7 @@ async function renderContainers(containers) {
         <p><strong>Container ID:</strong> ${container.Id.substring(0, 12)}</p>
         <p><strong>Status:</strong> ${isRunning ? 'Running' : 'Stopped'}</p>
         <p><strong>Health Status:</strong> ${healthStatus}</p>
-        <button class="text-white bg-${isRunning ? 'red' : 'blue'}-500 hover:bg-${isRunning ? 'red' : 'blue'}-700 py-1 px-3 rounded" onclick="${buttonAction}">${buttonLabel}</button>
+        <button class="bg-${isRunning ? 'red' : 'blue'}-500 hover:bg-${isRunning ? 'red' : 'blue'}-700 text-white font-bold py-1 px-3 rounded" onclick="${buttonAction}">${buttonLabel}</button>
       </div>
     `;
   }));

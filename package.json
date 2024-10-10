@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "My Electron application description",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "tailwind:build": "npx tailwindcss -i ./src/styles.css -o ./src/build.css --watch",
     "electron:start": "electron .",

@@ -1,6 +1,21 @@
-const express = require('express');
-const Docker = require('dockerode');
-const cors = require('cors');
+// const express = require('express');
+// const Docker = require('dockerode');
+// const cors = require('cors');
+
+// const app = express();
+// const docker = new Docker();
+
+// app.use(cors());
+// app.use(express.json());
+
+// const { exec } = require('child_process');
+// const path = require('path');
+
+import express from 'express';
+import Docker from 'dockerode';
+import cors from 'cors';
+import { exec } from 'child_process';
+import path from 'path';
 
 const app = express();
 const docker = new Docker();
@@ -8,8 +23,6 @@ const docker = new Docker();
 app.use(cors());
 app.use(express.json());
 
-const { exec } = require('child_process');
-const path = require('path');
 
 // Route to start Docker Compose services in a specific directory
 app.post('/compose/up', (req, res) => {
