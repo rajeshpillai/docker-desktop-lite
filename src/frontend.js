@@ -5,6 +5,9 @@ import { listVolumes, createVolume, removeVolume, pruneVolumes } from './js/volu
 import { fetchContainers, startContainer, stopContainer } from './js/containers.js';
 import { viewStats, closeStatsModal } from './js/stats.js';
 import { listComposeServices, startCompose, stopCompose, selectProjectDirectory } from './js/compose.js';
+import { listContainerServices } from './js/services.js';  // Corrected import for service listing
+
+
 
 // Attach event listeners for container actions
 document.getElementById('list-containers').addEventListener('click', fetchContainers);

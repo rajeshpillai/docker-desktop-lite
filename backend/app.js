@@ -24,6 +24,52 @@ app.use(cors());
 app.use(express.json());
 
 
+// Services within containers
+app.get('/containers/:containerId/services', async (req, res) => {
+  const containerId = req.params.containerId;
+  try {
+    const container = docker.getContainer(containerId);
+    const containerInfo = await container.inspect();
+
+    if (containerInfo.State.Status !== 'running') {
+      return res.status(409).json({ error: 'Container is not running' });
+    }
+
+    // Fetch services inside the running container
+    const services = await fetchContainerServices(containerId); // Assuming you have a function to do this
+    res.json({ services });
+  } catch (error) {
+    console.error('Error fetching container services:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+app.post('/containers/:id/services/:service/start', (req, res) => {
+  const containerId = req.params.id;
+  const serviceName = req.params.service;
+  
+  exec(`docker exec ${containerId} systemctl start ${serviceName}`, (error, stdout, stderr) => {
+    if (error) {
+      return res.status(500).json({ error: stderr });
+    }
+    res.json({ message: `Service ${serviceName} started successfully.` });
+  });
+});
+
+app.post('/containers/:id/services/:service/stop', (req, res) => {
+  const containerId = req.params.id;
+  const serviceName = req.params.service;
+
+  exec(`docker exec ${containerId} systemctl stop ${serviceName}`, (error, stdout, stderr) => {
+    if (error) {
+      return res.status(500).json({ error: stderr });
+    }
+    res.json({ message: `Service ${serviceName} stopped successfully.` });
+  });
+});
+
+
 // Route to start Docker Compose services in a specific directory
 app.post('/compose/up', (req, res) => {
   const { projectDir } = req.body;  // Receive the project directory

@@ -1,4 +1,6 @@
 // containers.js
+import { listContainerServices } from './services.js';  // Import the service function
+
 
 // Function to list Docker containers
 export async function fetchContainers() {
@@ -12,8 +14,86 @@ export async function fetchContainers() {
   }
 }
 
-// Function to render Docker containers
 export async function renderContainers(containers) {
+  const output = document.getElementById('output');
+  output.innerHTML = ''; // Clear previous output
+
+  if (!containers || containers.length === 0) {
+    output.innerHTML = '<p class="text-red-500">No containers found.</p>';
+    return;
+  }
+
+  const containerRows = await Promise.all(containers.map(async (container) => {
+    const isRunning = container.State === 'running';
+    const buttonLabel = isRunning ? 'Stop' : 'Start';
+
+    // Fetch health status for each container (if implemented)
+    const healthStatus = await fetchHealthStatus(container.Id);
+
+    const containerElement = document.createElement('div');
+    containerElement.classList.add('bg-white', 'shadow-md', 'rounded-lg', 'mb-4', 'p-4');
+
+    containerElement.innerHTML = `
+      <h2 class="text-lg font-bold">${container.Names[0]}</h2>
+      <p><strong>Container ID:</strong> ${container.Id.substring(0, 12)}</p>
+      <p><strong>Status:</strong> ${isRunning ? 'Running' : 'Stopped'}</p>
+      <p><strong>Health Status:</strong> ${healthStatus}</p>
+    `;
+
+    // Create Start/Stop button
+    const actionButton = document.createElement('button');
+    actionButton.classList.add('bg', isRunning ? 'bg-red-500' : 'bg-blue-500', 'hover:bg-blue-700', 'text-white', 'font-bold', 'py-1', 'px-3', 'rounded');
+    actionButton.textContent = buttonLabel;
+
+    // Add event listener for start/stop action
+    actionButton.addEventListener('click', () => {
+      if (isRunning) {
+        stopContainer(container.Id);
+      } else {
+        startContainer(container.Id);
+      }
+    });
+
+    // Add button to container element
+    containerElement.appendChild(actionButton);
+
+    // Add additional buttons for inspect, logs, stats, services
+    const inspectButton = document.createElement('button');
+    inspectButton.classList.add('bg-yellow-500', 'hover:bg-yellow-700', 'text-white', 'font-bold', 'py-1', 'px-3', 'rounded', 'ml-2');
+    inspectButton.textContent = 'Inspect';
+    inspectButton.addEventListener('click', () => inspectContainer(container.Id));
+
+    const logsButton = document.createElement('button');
+    logsButton.classList.add('bg-gray-500', 'hover:bg-gray-700', 'text-white', 'font-bold', 'py-1', 'px-3', 'rounded', 'ml-2');
+    logsButton.textContent = 'Logs';
+    logsButton.addEventListener('click', () => viewLogs(container.Id));
+
+    const statsButton = document.createElement('button');
+    statsButton.classList.add('bg-green-500', 'hover:bg-green-700', 'text-white', 'font-bold', 'py-1', 'px-3', 'rounded', 'ml-2');
+    statsButton.textContent = 'Stats';
+    statsButton.addEventListener('click', () => viewStats(container.Id));
+
+    const servicesButton = document.createElement('button');
+    servicesButton.classList.add('bg-purple-500', 'hover:bg-purple-700', 'text-white', 'font-bold', 'py-1', 'px-3', 'rounded', 'ml-2');
+    servicesButton.textContent = 'Services';
+    servicesButton.addEventListener('click', () => listContainerServices(container.Id));
+
+    // Append additional buttons to container element
+    containerElement.appendChild(inspectButton);
+    containerElement.appendChild(logsButton);
+    containerElement.appendChild(statsButton);
+    containerElement.appendChild(servicesButton);
+
+    return containerElement;
+  }));
+
+  // Append all container elements to the output
+  containerRows.forEach(containerElement => output.appendChild(containerElement));
+}
+
+
+// Function to render Docker containers
+export async function renderContainersX(containers) {
   const output = document.getElementById('output');
   output.innerHTML = ''; // Clear previous output
 
